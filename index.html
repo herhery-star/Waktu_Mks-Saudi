@@ -56,6 +56,14 @@ function update(){const now=new Date();updatePeriod(now);document.getElementById
 function convertCutoff(){const v=document.getElementById("cutoffInput").value||"12:00";let [h,m]=v.split(":").map(Number);let total=(h*60+m-300+1440)%1440;document.getElementById("cutoffSaudi").textContent=String(Math.floor(total/60)).padStart(2,"0")+":"+String(total%60).padStart(2,"0")}
 document.getElementById("cutoffInput").addEventListener("input",convertCutoff);window.addEventListener("resize",update);update();convertCutoff();setInterval(update,1000);
 let installPrompt;const installBtn=document.getElementById("installBtn");window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();installPrompt=e;installBtn.style.display="block"});installBtn.addEventListener("click",async()=>{if(!installPrompt){alert("Buka menu browser lalu pilih Tambahkan ke layar utama / Install app.");return}installPrompt.prompt();await installPrompt.userChoice;installPrompt=null;installBtn.style.display="none"});
-if("serviceWorker" in navigator && (location.protocol==="https:"||location.hostname==="localhost")){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}))}
+if("serviceWorker" in navigator && (location.protocol==="https:"||location.hostname==="localhost")){
+  window.addEventListener("load",async()=>{
+    try{
+      const registration=await navigator.serviceWorker.register("./sw.js",{updateViaCache:"none"});
+      registration.update().catch(()=>{});
+      navigator.serviceWorker.addEventListener("controllerchange",()=>window.location.reload());
+    }catch(error){console.warn("Service worker belum dapat diperbarui",error);}
+  });
+}
 </script>
 </body></html>
